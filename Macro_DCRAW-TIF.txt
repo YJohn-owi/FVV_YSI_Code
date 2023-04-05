@@ -1,0 +1,45 @@
+//Get File Directory and file names
+dirSrc = getDirectory("Select Input Directory");
+dirDest = getDirectory("Select Output Directory");
+fileList = getFileList(dirSrc);
+caption = "dcraw batch converter";
+ 
+print(caption + " - Starting");
+print("Reading from : " + dirSrc);
+print("Writing to   : " + dirDest);
+ 
+// Create output directory
+File.makeDirectory(dirDest);
+ 
+setBatchMode(true);
+fileNumber = 0;
+while (fileNumber < fileList.length) {
+    id = fileList[fileNumber++];
+    print(toString(fileNumber) + "/" + toString(fileList.length) + ": " + id);
+    // Read input image
+    run("DCRaw Reader...",
+        "open=" + dirSrc + id + " " +
+            "use_temporary_directory " +
+            "white_balance=[Camera white balance] " +
+            "do_not_automatically_brighten " +
+            "output_colorspace=[raw] " +
+            "document_mode_without_scaling " +
+            "read_as=[16-bit] " +
+            "interpolation=[High-speed, low-quality bilinear]" +
+            "do_not_rotate " +
+//            "show_metadata" +
+            "");
+    idSrc = getImageID();
+
+   run("Specify...", "width=628 height=1732 x=2268 y=1016");
+   run("Crop");
+    // Save result
+    saveAs("Tiff", dirDest + id);
+ 
+    // Cleanup
+    if (isOpen(idSrc)) {
+        selectImage(idSrc);
+        close();
+    }
+}
+print(caption + " - Completed");
